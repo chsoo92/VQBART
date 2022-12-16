@@ -1,5 +1,6 @@
 # Fine-tuning BART with vector quantization inspired from [VQVAE](https://github.com/MishaLaskin/vqvae))
 
+This repository is built on top of [Fairseq](https://github.com/facebookresearch/fairseq)
 
 ### 1) Preprocess the data using BPE by following instructions [here](https://github.com/facebookresearch/fairseq/blob/main/examples/roberta/README.pretraining.md)
 
