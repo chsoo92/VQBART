@@ -1,14 +1,13 @@
-EMBDIM=32
-MLPS=2
-BSZ=1
-FL=0
-EPOCH=10
-CODEBOOK=$((512*4))
-TEMBD=$((256*3))
+EMBDIM=32             #Codebook vector dimension
+MLPS=2                #number of MLP layers before and after VQ layer
+BSZ=1                 #batch size
+EPOCH=10              #numbrt of epochs to train
+CODEBOOK=$((512*4))   #number of codebook vectors
+TEMBD=$((256*3))      #transformer embedding vector dimension
 MODEL="$EMBDIM"_"$MLPS"_"$CODEBOOK"
 NAME="$MODEL"_uncond
-LR=4.5e-06
-GPUS=4
+LR=4.5e-06           #learning rate
+GPUS=4               #number of GPUS to use
 
 CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 --tokens-per-sample 200 \
@@ -55,15 +54,9 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 --batch-size $BSZ \
 --tensorboard-logdir logs_$NAME \
 --save-dir checkpoints/$NAME \
---feature-loss $FL \
 --vocab-size $CODEBOOK \
 --n-embd $TEMBD \
---restore-file checkpoints/$NAME/checkpoint_1_16500.pt \
 --disable-validation
 
-#--fp16 \
-#--restore-file checkpoints/8_2_e2e_re/checkpoint_6_16500.pt \
-#--no-epoch-checkpoints \
-#--e2e \
-#--max_valid_steps 100\
-#--pretrained-file checkpoints/$MODEL/checkpoint10.pt \
+
+#to resume training --restore-file $CHECKPOINT_PATH
