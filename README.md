@@ -142,33 +142,19 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 --disable-validation
 ```
 
-### 5) Inference on GLUE task
-After training the model as mentioned in previous step, you can perform inference with checkpoints in `checkpoints/` directory using following python code snippet:
+### 5) Interpolation with trained models:
+
+To run interpolation on trained model, run the following command
+```bash
+python sample_test.py --checkpoint_path $PATH-TO-CHECKPOINT --checkpoint_file $CHECKPOINT-FILE --beam $BEAM-SEARCH-SIZE
+```
 
 ```python
-from fairseq.models.bart import BARTModel
+text1 = 'I walked in the past.'#"While the planets move in elliptical orbits around the Sun, their orbits are not very elliptical"
+text2 = 'The organ of Corti is well protected from accidental injury'#"<mask> a passage of Lorem Ipsum, you need to be sure <mask> anything <mask> hidden in the middle of text."
+text3 = 'Our computer can carry us in time as well as in space'
+text_inp = [text2,text3]
+output = model.fill_mask(text_inp, topk=args.topk, beam=args.beam, match_source_len=args.match_source_len, interpolate=[0.5,0.5])
 
-bart = BARTModel.from_pretrained(
-    'checkpoints/',
-    checkpoint_file='checkpoint_best.pt',
-    data_name_or_path='RTE-bin'
-)
-
-label_fn = lambda label: bart.task.label_dictionary.string(
-    [label + bart.task.label_dictionary.nspecial]
-)   
-ncorrect, nsamples = 0, 0
-bart.cuda()
-bart.eval()
-with open('glue_data/RTE/dev.tsv') as fin:
-    fin.readline()
-    for index, line in enumerate(fin):
-        tokens = line.strip().split('\t')
-        sent1, sent2, target = tokens[1], tokens[2], tokens[3]
-        tokens = bart.encode(sent1, sent2)
-        prediction = bart.predict('sentence_classification_head', tokens).argmax().item()
-        prediction_label = label_fn(prediction)
-        ncorrect += int(prediction_label == target)
-        nsamples += 1
-print('| Accuracy: ', float(ncorrect)/float(nsamples))
+print(checkpoint_path,output)
 ```
