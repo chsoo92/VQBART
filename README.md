@@ -144,7 +144,7 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 
 ### 5) Interpolation with trained models:
 
-To run interpolation on trained model, run the following command:
+To run interpolation on trained modelS, run the following command:
 ```bash
 python sample_test.py --checkpoint_path $PATH-TO-CHECKPOINT --checkpoint_file $CHECKPOINT-FILE --beam $BEAM-SEARCH-SIZE
 ```
