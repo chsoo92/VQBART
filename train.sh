@@ -1,12 +1,11 @@
-EMBDIM=32 #
-MLPS=2
-BSZ=32
-FL=0
-EPOCH=30
-CODEBOOK=$((512*4)) #
-GPUS=4
-ARCHTYPE=gaubart
-CRIT=vq_cross_entropy
+EMBDIM=32             #Codebook vector dimension
+MLPS=2                #number of MLP layers before and after VQ layer
+BSZ=32                #batch size
+EPOCH=30              #numbrt of epochs to train
+CODEBOOK=$((512*4))   #number of codebook vectors
+GPUS=4                #number of GPUS to use
+ARCHTYPE=vqbart       #vqbart for default vq model. gaubart for sqvae variant
+CRIT=vq_cross_entropy 
 NAME="$EMBDIM"_"$MLPS"_"$CODEBOOK"_"$ARCHTYPE"
 ARCH="$ARCHTYPE"_"large"
 
@@ -59,7 +58,6 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 --batch-size $BSZ \
 --tensorboard-logdir logs_$NAME \
 --save-dir checkpoints/$NAME \
---feature-loss $FL \
 --disable-validation \
 --restore-file checkpoints/$NAME/checkpoint_13_32000.pt
 
