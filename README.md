@@ -3,48 +3,85 @@
 
 ### 1) Preprocess the data using BPE by following instructions [here](https://github.com/facebookresearch/fairseq/blob/main/examples/roberta/README.pretraining.md)
 
-
-
-
 ### 2) To fine tune VQ layer with pretrained BART, run train.sh
 
 ```bash
-TOTAL_NUM_UPDATES=2036  # 10 epochs through RTE for bsz 16
-WARMUP_UPDATES=61      # 6 percent of the number of updates
-LR=1e-05                # Peak LR for polynomial LR scheduler.
-NUM_CLASSES=2
-MAX_SENTENCES=16        # Batch size.
-BART_PATH=/path/to/bart/model.pt
+EMBDIM=32             #Codebook vector dimension
+MLPS=2                #number of MLP layers before and after VQ layer
+BSZ=32                #batch size
+EPOCH=30              #numbrt of epochs to train
+CODEBOOK=$((512*4))   #number of codebook vectors
+GPUS=4                #number of GPUS to use
+ARCHTYPE=vqbart       #vqbart for default vq model. gaubart for sqvae variant
+CRIT=vq_cross_entropy 
+NAME="$EMBDIM"_"$MLPS"_"$CODEBOOK"_"$ARCHTYPE"
+ARCH="$ARCHTYPE"_"large"
 
-CUDA_VISIBLE_DEVICES=0,1 fairseq-train RTE-bin/ \
-    --restore-file $BART_PATH \
-    --batch-size $MAX_SENTENCES \
-    --max-tokens 4400 \
-    --task sentence_prediction \
-    --add-prev-output-tokens \
-    --layernorm-embedding \
-    --share-all-embeddings \
-    --share-decoder-input-output-embed \
-    --reset-optimizer --reset-dataloader --reset-meters \
-    --required-batch-size-multiple 1 \
-    --init-token 0 \
-    --arch bart_large \
-    --criterion sentence_prediction \
-    --num-classes $NUM_CLASSES \
-    --dropout 0.1 --attention-dropout 0.1 \
-    --weight-decay 0.01 --optimizer adam --adam-betas "(0.9, 0.98)" --adam-eps 1e-08 \
-    --clip-norm 0.0 \
-    --lr-scheduler polynomial_decay --lr $LR --total-num-update $TOTAL_NUM_UPDATES --warmup-updates $WARMUP_UPDATES \
-    --fp16 --fp16-init-scale 4 --threshold-loss-scale 1 --fp16-scale-window 128 \
-    --max-epoch 10 \
-    --find-unused-parameters \
-    --best-checkpoint-metric accuracy --maximize-best-checkpoint-metric;
+CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
+--mask 0.3 \
+--tokens-per-sample 512 \
+--total-num-update 500000 \
+--max-update 500000 \
+--warmup-updates 10000 \
+--task denoising \
+--save-interval 1 \
+--optimizer adam \
+--lr-scheduler polynomial_decay \
+--lr 0.0004 \
+--dropout 0.1 \
+--max-tokens 3200 \
+--weight-decay 0.01 \
+--attention-dropout 0.1 \
+--share-all-embeddings \
+--clip-norm 0.1 \
+--skip-invalid-size-inputs-valid-test \
+--log-format json \
+--log-interval 50 \
+--save-interval-updates 500 \
+--keep-interval-updates 1 \
+--update-freq 4 \
+--seed 4 \
+--distributed-world-size $GPUS \
+--distributed-port 54187 \
+--mask-length span-poisson \
+--replace-length 1 \
+--encoder-learned-pos \
+--decoder-learned-pos \
+--rotate 0.0 \
+--mask-random 0.1 \
+--permute-sentences 1 \
+--insert 0.0 \
+--poisson-lambda 3.5 \
+--dataset-impl mmap \
+--bpe gpt2 \
+--num-workers 4 \
+--distributed-init-method tcp://localhost:54187 \
+--log-file logs_$NAME.txt \
+--arch $ARCH \
+--criterion $CRIT \
+--codebook $CODEBOOK \
+--max-epoch $EPOCH \
+--emb-dim $EMBDIM \
+--MLPLayers $MLPS \
+--batch-size $BSZ \
+--tensorboard-logdir logs_$NAME \
+--save-dir checkpoints/$NAME \
+--disable-validation \
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
 ```
 
-https://github.com/facebookresearch/fairseq/blob/main/examples/roberta/README.pretraining.md
+### 3) To run GLUE task with trained model
 
+Follow the instructions [here](https://github.com/facebookresearch/fairseq/edit/main/examples/bart/README.glue.md
+) to preprocess for GLUE tasks.
 
-https://github.com/facebookresearch/fairseq/edit/main/examples/bart/README.glue.md
+Then, run GLUE.sh with hyperparameters in the table [here](https://github.com/facebookresearch/fairseq/edit/main/examples/bart/README.glue.md
+).
 
 ### 1) Download the data from GLUE website (https://gluebenchmark.com/tasks) using following commands:
 ```bash
