@@ -1,4 +1,4 @@
-# Fine-tuning BART with vector quantization techniques inspired from [VQVAE]([https://github.com/MishaLaskin/vqvae]))
+# Fine-tuning BART with vector quantization inspired from [VQVAE](https://github.com/MishaLaskin/vqvae))
 
 
 ### 1) Preprocess the data using BPE by following instructions [here]([https://github.com/facebookresearch/fairseq/blob/main/examples/roberta/README.pretraining.md])
