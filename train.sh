@@ -59,3 +59,5 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" python -O train.py ./data-bin/wikitext-103 \
 --tensorboard-logdir logs_$NAME \
 --save-dir checkpoints/$NAME \
 --disable-validation \
+
+#to resume training --restore-file $CHECKPOINT_PATH
